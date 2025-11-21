@@ -1,21 +1,15 @@
 import { mockTeachers } from '@/mocks/teachers'
 // import api from './index'
 
-export function fetchTeachers () {
-  // TODO: 调用后端接口 — 确认 `/api/teachers` 返回的数组或分页结构，以及字段名
-  // 说明：数据库中 Teacher 表结构为 { id, user_id, teacher_type, type_id }
-  // 前端通常需要展示教师姓名等聚合信息
-  // 故后端返回聚合数据，例如 { id, user_id, name, department?, teacher_type, type_id }
-
-  // 原始真实请求（保留为注释）：
-  // return api.get('/teachers')
-
-  return Promise.resolve(mockTeachers)
-}
+// NOTE: `GET /teachers` 列表接口已在仓库中移除（deprecated）。
+// 建议前端依赖下列两种方式之一：
+// 1) `/courses` 接口在返回课程对象时聚合 `teacher: { id, name }`，前端直接使用该字段。
+// 2) 按需调用 `GET /teachers/{id}`（保留），获取单个教师信息。
+// 因此此文件不再导出 `fetchTeachers()` 列表方法，以避免在 UI 中误用全量拉取并缓存。
 
 export function getTeacher (id) {
   if (id === undefined || id === null) return Promise.resolve(null)
-  // 原始真实请求（保留为注释）：
+  // 真实请求示例（联调时可启用）：
   // return api.get(`/teachers/${id}`)
 
   const found = mockTeachers.find(t => String(t.id) === String(id) || t.id === id)

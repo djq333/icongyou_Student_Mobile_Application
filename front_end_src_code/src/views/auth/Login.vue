@@ -6,6 +6,13 @@
       <p class="subtitle">渐积跬步，从游而学 </p>
 
       <van-form @submit="onSubmit">
+        <van-field v-model="form.name" name="name" placeholder="姓名">
+          <template #right-icon>
+            <button type="button" class="clear-svg-btn" v-if="form.name" @click="form.name = ''" aria-label="清除姓名">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+          </template>
+        </van-field>
         <van-field v-model="form.phone" name="phone" placeholder="手机号">
           <template #right-icon>
             <button type="button" class="clear-svg-btn" v-if="form.phone" @click="form.phone = ''" aria-label="清除手机号">
@@ -13,7 +20,8 @@
             </button>
           </template>
         </van-field>
-        <van-field v-model="form.password" name="password" placeholder="请输入密码">
+
+        <van-field v-model="form.password" name="password" type="password" placeholder="请输入密码">
           <template #right-icon>
             <button type="button" class="clear-svg-btn" v-if="form.password" @click="form.password = ''" aria-label="清除密码">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -48,9 +56,13 @@ import logo from '@/assets/logo.png'
 export default {
   name: 'Login',
   setup () {
-    const form = ref({ phone: '', password: '' })
+    const form = ref({ name: '', phone: '', password: '' })
 
     const validate = () => {
+      if (!form.value.name) {
+        showFailToast('请输入姓名')
+        return false
+      }
       if (!form.value.phone) {
         showFailToast('请输入手机号')
         return false
@@ -74,8 +86,8 @@ export default {
         showFailToast(err?.message || '登录失败')
       }
 
-      //   // 可按后端最终契约发送手机号/密码：
-      //   const payload = { phone: form.value.phone, pwd: form.value.password }
+      //   // 根据新约定使用姓名+手机号+密码进行登录：
+      //   const payload = { user_name: form.value.name, phone: form.value.phone, pwd: form.value.password }
       //   // TODO: 调用后端接口 — 登录入口，确认返回值包含 token 并处理后端错误码
       //   const res = await login(payload)
       //   // res 应为 { token, user }

@@ -6,9 +6,8 @@ import { mockLogin, mockRegister } from '@/mocks/auth'
 
 export function login (payload) {
   // TODO: 调用后端接口 — 确认 `/api/auth/login` 返回 ActionResult.data 包含 token 与 user
-  // 前端字段: { account, password }
-  // 数据库 User 表字段: user_name, pwd
-  // const mapped = { user_name: payload.account, pwd: payload.password }
+  // 新约定：前端使用姓名 + 手机号 + 密码 登录，payload 示例： { user_name, phone, pwd }
+  // const mapped = { user_name: payload.user_name, phone: payload.phone, pwd: payload.pwd }
   // return api.post('/auth/login', mapped)
 
   // mock 返回，使用共享 mocks（保持向后兼容）
@@ -17,8 +16,13 @@ export function login (payload) {
 
 export function register (payload) {
   // TODO: 调用后端接口 — 确认 `/api/auth/register` 的参数校验与错误码
-  // 前端当前传递: { school, account, password }
-  // const mapped = { user_name: payload.account, pwd: payload.password, nick_name: payload.nick_name || payload.account, school: payload.school }
+  // 新约定：前端发送 { user_name, nick_name, phone, pwd, user_type }
+  // 后端示例映射：
+  // 1) 根据 payload.tenant_name（或 payload.school）在租户表（Tenant）中查找对应 tenant_id；
+  //    若找到则在创建 User 时把 tenant_id 写入 User.tenant_id 字段；若未找到则按后端策略创建或返回错误。
+  // 2) 在 User 表插入 (user_name, pwd, nick_name, phone, tenant_id)
+  // 3) 若 payload.user_type === 1 创建 Student 表记录并保存 school/其他信息
+  // const mapped = { user_name: payload.user_name, pwd: payload.pwd, nick_name: payload.nick_name, phone: payload.phone, user_type: payload.user_type }
   // return api.post('/auth/register', mapped)
 
   return Promise.resolve(mockRegister(payload)) // 保持向后兼容

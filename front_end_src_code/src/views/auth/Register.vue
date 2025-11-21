@@ -6,21 +6,37 @@
       <p class="subtitle">成为爱从游的一员，开启项目化学习</p>
 
       <van-form @submit="onSubmit">
-        <van-field v-model="form.school" name="school" placeholder="学校">
+        <van-field v-model="form.tenant_name" name="tenant_name" placeholder="学校（作为租户名）">
           <template #right-icon>
-            <button type="button" class="clear-svg-btn" v-if="form.school" @click="form.school = ''" aria-label="清除学校">
+            <button type="button" class="clear-svg-btn" v-if="form.tenant_name" @click="form.tenant_name = ''" aria-label="清除学校（租户名）">
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
             </button>
           </template>
         </van-field>
 
+          <van-field v-model="form.user_name" name="user_name" placeholder="姓名">
+            <template #right-icon>
+              <button type="button" class="clear-svg-btn" v-if="form.user_name" @click="form.user_name = ''" aria-label="清除用户名">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </template>
+          </van-field>
+
+          <van-field v-model="form.nick_name" name="nick_name" placeholder="昵称">
+            <template #right-icon>
+              <button type="button" class="clear-svg-btn" v-if="form.nick_name" @click="form.nick_name = ''" aria-label="清除昵称">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </template>
+          </van-field>
+
           <van-field v-model="form.phone" name="phone" placeholder="手机号">
             <template #right-icon>
               <button type="button" class="clear-svg-btn" v-if="form.phone" @click="form.phone = ''" aria-label="清除手机号">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-            </button>
-          </template>
-        </van-field>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#409EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </template>
+          </van-field>
 
         <van-field v-model="form.password" name="password" placeholder="不少于6位">
           <template #right-icon>
@@ -60,10 +76,12 @@ import logo from '@/assets/logo.png'
 export default {
   name: 'Register',
   setup () {
-    const form = ref({ school: '', phone: '', password: '', confirm: '' })
+    const form = ref({ tenant_name: '', user_name: '', nick_name: '', phone: '', password: '', confirm: '' })
 
     const validate = () => {
-      if (!form.value.school) { showFailToast('请选择或输入学校'); return false }
+      if (!form.value.tenant_name) { showFailToast('请输入学校（作为租户名）'); return false }
+      if (!form.value.user_name) { showFailToast('请输入姓名'); return false }
+      if (!form.value.nick_name) { showFailToast('请输入昵称'); return false }
       if (!form.value.phone) { showFailToast('请输入手机号'); return false }
       if (!form.value.password || form.value.password.length < 6) { showFailToast('密码至少6位'); return false }
       if (form.value.password !== form.value.confirm) { showFailToast('两次密码不一致'); return false }
@@ -76,12 +94,16 @@ export default {
       if (!validate()) return
       try {
         // TODO: 调用后端接口 — 注册入口，确认必填字段与后端返回行为
-        // 按当前约定使用手机号与密码：phone -> User.phone, pwd -> User.pwd
+        // 按新约定发送注册信息：包含用户名、昵称、手机号、密码与 user_type(1=学生)
+        // 新增字段 `tenant_name`：后端将以该租户名查询租户表并获取 tenant_id，然后把 tenant_id 存到 User 表中。
+        // 后端将以 `tenant_name` 查询租户表并获取 tenant_id，并写入 User.tenant_id。
         await register({
+          user_name: form.value.user_name,
+          nick_name: form.value.nick_name,
           phone: form.value.phone,
           pwd: form.value.password,
-          nick_name: form.value.phone,
-          school: form.value.school
+          user_type: 1,
+          tenant_name: form.value.tenant_name
         })
         showSuccessToast('注册成功，请登录')
         window.setTimeout(() => { router.replace({ path: '/login' }) }, 600)

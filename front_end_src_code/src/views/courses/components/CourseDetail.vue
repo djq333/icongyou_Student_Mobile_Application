@@ -27,6 +27,10 @@
                   <div class="meta-label">教师</div>
                   <div class="meta-value">{{ course._teacherName || teacherName }}</div>
                 </div>
+                  <div class="meta-item">
+                    <div class="meta-label">状态</div>
+                    <div class="meta-value">{{ statusLabel(course.status) }}</div>
+                  </div>
                 <div class="meta-item">
                   <div class="meta-label">课程编号</div>
                   <div class="meta-value">{{ course.code || '—' }}</div>
@@ -34,6 +38,10 @@
                 <div class="meta-item">
                   <div class="meta-label">学时</div>
                   <div class="meta-value">{{ course.duration || '—' }}</div>
+                </div>
+                <div class="meta-item">
+                  <div class="meta-label">类型</div>
+                  <div class="meta-value">{{ typeLabel(course.type) }}</div>
                 </div>
                 
                 <div class="meta-item">
@@ -57,7 +65,8 @@
                   <div class="meta-value">{{ formatDate(course.end_time) }}</div>
                 </div>
               </div>
-              <div class="desc">{{ course.description }}</div>
+              <!-- description 不是 Course 表的物理列，后端可按需返回；前端仅在存在时显示 -->
+              <div v-if="course.description" class="desc">{{ course.description }}</div>
               <div class="progress-wrap">
                 <van-progress v-if="typeof course.progress === 'number'" :percentage="course.progress" />
               </div>
@@ -101,7 +110,10 @@ export default {
     const course = ref({ id: null, name: '', teacher: '', description: '', image: '', code: '', duration: 0, start_time: '', end_time: '', task_number: 0, student_number: 0, semester_id: null, create_time: '' })
     const defaultCover = defaultImg
 
-    const goBack = () => router.back()
+    const goBack = () => {
+      // 始终返回课程列表页，避免在深层嵌套或来自外部链接时返回到不期望的历史记录
+      router.replace({ path: '/courses' })
+    }
 
     const panelCourseId = computed(() => {
       if (course.value && course.value.id !== undefined && course.value.id !== null) return course.value.id
@@ -114,7 +126,6 @@ export default {
       activeTab.value = 2
     }
 
-    // react to route changes (e.g., user navigates to /courses/:id/tasks)
     watchEffect(() => {
       if (route.name === 'course-tasks' || (route.query && route.query.tab === 'tasks')) {
         activeTab.value = 2
@@ -129,6 +140,22 @@ export default {
       if (t.name) return t.name
       return ''
     })
+
+    const statusMap = {
+      1: '未开课',
+      2: '进行中',
+      3: '已结课'
+    }
+    const statusLabel = (s) => { if (s === undefined || s === null) return '—'; return statusMap[Number(s)] || String(s) }
+
+    const typeMap = {
+      1: '实训课程',
+      2: '活动课程',
+      3: '必修课',
+      4: '选修课',
+      5: '公共基础课'
+    }
+    const typeLabel = (t) => { if (t === undefined || t === null) return '—'; return typeMap[Number(t)] || String(t) }
 
     const formatDate = (iso) => {
       if (!iso) return ''
@@ -162,7 +189,7 @@ export default {
         activeTab.value = 2
     }
 
-    return { course, defaultCover, goBack, teacherName, formatDate, panelCourseId, openTasks, activeTab }
+    return { course, defaultCover, goBack, teacherName, formatDate, panelCourseId, openTasks, activeTab, statusLabel, typeLabel }
   }
 }
 </script>

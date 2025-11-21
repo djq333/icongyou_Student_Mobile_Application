@@ -84,12 +84,9 @@ export default {
     const load = async () => {
       loading.value = true
       try {
-        // TODO: 原始实现会通过 fetchUserCourseProgress 调用后端接口获取数据。
-        // 已注释真实请求并改为使用本地 mock（参见 `src/mocks/progress.js` 中的 mockProgressMap）。
-        // const res = await fetchUserCourseProgress(props.courseId)
-        const { mockProgressMap } = await import('@/mocks/progress')
-        const res = mockProgressMap[props.courseId] || { courseId: props.courseId, completedTasks: [], pendingTasks: [], dimension_progress: {} }
-        console.debug('[PersonalPanel] progress (mock) fetch', res)
+        // 调用统一的 progress API（当前为 mock 实现）
+        const res = await fetchUserCourseProgress(props.courseId)
+        console.debug('[PersonalPanel] progress fetch', res)
         const merged = Object.assign({}, data.value, res)
         try { if (typeof merged.dimension_progress === 'string') merged.dimension_progress = JSON.parse(merged.dimension_progress) } catch (e) { merged.dimension_progress = {} }
         try { if (typeof merged.completed_tasks === 'string') merged.completed_tasks = JSON.parse(merged.completed_tasks) } catch (e) { merged.completed_tasks = [] }

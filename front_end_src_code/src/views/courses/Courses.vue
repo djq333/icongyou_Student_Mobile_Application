@@ -117,22 +117,17 @@ export default {
         // TODO: 原本这里会调用后端 fetchCourses()
         // 当前 mock 实现已在 `src/api/courses.js` 中支持传参（{ status, query, types }），
         // 当需要切换到真实后端时，可直接调用 `await fetchCourses(params)` 并移除 mock 导入。
-        courses.value = await fetchCourses({ status: status.value, query: query.value, types: selectedCategories.value })
+        const resp = await fetchCourses({ status: status.value, query: query.value, types: selectedCategories.value, page: 1, size: 1000 })
+        // 兼容后端分页返回结构：{ items, total, page, size }
+        courses.value = resp && resp.items ? resp.items : (Array.isArray(resp) ? resp : [])
       } catch (err) {
         // 更详细的调试信息：打印可能来自后端的响应体
         console.error('加载课程失败', err)
         console.error('response data:', err?.response?.data)
         showFailToast({ message: `加载课程失败：${err?.message || '服务器错误'}`, duration: 3000 })
       }
-      try {
-        // TODO: 调用后端接口 — 预取教师列表以用于名称解析，确认返回数组或分页结构
-        const tlist = await (await import('@/api/teachers')).fetchTeachers()
-        const map = {}
-        tlist.forEach(t => { map[String(t.id)] = t.name })
-        teachersMap.value = map
-      } catch (e) {
-        console.warn('加载教师列表失败', e)
-      }
+      // 注意：不预取教师列表以避免前端缓存。CourseCard 会按需调用 `getTeacher(id)` 获取教师信息，
+      // 推荐后端在返回课程列表时直接聚合教师姓名以减少请求数。
     })
 
     const getTeacherName = (c) => {
